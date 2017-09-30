@@ -50,11 +50,20 @@ function generateWalls(width, height){
 
 	var map = PACMAP.generateMap( width, height );
 
+	var wallTexture = new THREE.TextureLoader().load( "./Textures/snowyHedge.png" );
+	wallTexture.magFilter = THREE.NearestFilter;
+	wallTexture.minFilter = THREE.NearestFilter;
+	wallTexture.wrapS = THREE.RepeatWrapping;
+	wallTexture.wrapT = THREE.RepeatWrapping;
+	wallTexture.repeat.set( 2, 2 );
+
+	var wallMaterial = new THREE.MeshBasicMaterial({map: wallTexture, color: 0x777777});
+
 	for( var i = 0; i < map.length; i++){
 		for( var j = 0; j < map[i].length; j++){
 
 			if( map[i][j] ){
-				var box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), new THREE.MeshBasicMaterial({color: 0x0000FF}), 0);
+				var box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), wallMaterial, 0);
 				box.position.x = 5*(j-width/2)+2.5;
 				box.position.z = 5*(i-height/2)+2.5;
 				scene.add( box );
@@ -65,12 +74,12 @@ function generateWalls(width, height){
 
 	for( var i = 0; i < width; i++ ){
 
-		var box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), new THREE.MeshBasicMaterial({color: 0x000000}), 0);
+		var box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), wallMaterial, 0);
 		box.position.x = 5*(width/2)+2.5;
 		box.position.z = 5*(i-height/2)+2.5;
 		scene.add(box);
 
-		box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), new THREE.MeshBasicMaterial({color: 0x000000}), 0);
+		box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), wallMaterial, 0);
 		box.position.x = -5*(width/2)+2.5;
 		box.position.z = 5*(i-height/2)+2.5;
 		scene.add(box);
@@ -79,12 +88,12 @@ function generateWalls(width, height){
 
 	for( var i = 0; i < height; i++ ){
 
-		var box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), new THREE.MeshBasicMaterial({color: 0x000000}), 0);
+		var box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), wallMaterial, 0);
 		box.position.x = 5*(i-width/2)+2.5;
 		box.position.z = 5*(height/2)+2.5;
 		scene.add(box);
 
-		box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), new THREE.MeshBasicMaterial({color: 0x000000}), 0);
+		box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), wallMaterial, 0);
 		box.position.x = 5*(i-width/2)+2.5;
 		box.position.z = -5*(height/2)+2.5;
 		scene.add(box);
@@ -95,7 +104,14 @@ function generateWalls(width, height){
 
 function generateFloor(width,height){
 
-	var floor = new THREE.Mesh( new THREE.BoxGeometry(width*5,5,height*5), new THREE.MeshBasicMaterial({color: 0x000000}), 0);
+	var floorTexture = new THREE.TextureLoader().load( "./Textures/snowyGround.png" );
+	floorTexture.magFilter = THREE.NearestFilter;
+	floorTexture.minFilter = THREE.NearestFilter;
+	floorTexture.wrapS = THREE.RepeatWrapping;
+	floorTexture.wrapT = THREE.RepeatWrapping;
+	floorTexture.repeat.set( width*2, height*2 );
+
+	var floor = new THREE.Mesh( new THREE.BoxGeometry(width*5,5,height*5), new THREE.MeshBasicMaterial({map: floorTexture, color: 0x777777}), 0);
 	floor.position.y = -5;
 	scene.add(floor);
 
@@ -104,7 +120,7 @@ function generateFloor(width,height){
 function initFPS(){
 
 	fpsRenderer = new THREE.WebGLRenderer();
-	fpsRenderer.setClearColor( 0xAAAAFF, 1.0 );
+	fpsRenderer.setClearColor( 0x000033, 1.0 );
 	
 	fpsRenderer.shadowMap.enabled = true;
 
