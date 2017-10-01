@@ -11,20 +11,44 @@ var fpsCamera, fpsRenderer;
 
 var hudCamera, hudRenderer;
 
-var clock = new THREE.Clock()
+var clock = new THREE.Clock();
 
-var player;
-var playerRotation = 0;
+var player, playerRotation = 0, playerGridPos;
+const speed = 0.1;
+
+const width = 20, height = 20;
 
 var jack;
 
-const speed = 0.1;
+var pellets;
+
+var pelletSound, music;
+
+function array2D(width, height){
+
+	var arr = new Array();
+	for( var i = 0; i < height; i++ ){
+
+		arr[i] = new Array();
+
+		for( var j = 0; j < width; j++ )
+			arr[i][j] = null;
+
+	}
+
+	return arr;
+
+}
 
 function init(){
 
-	initScene(20,20);
+	pellets = array2D(width,height);
+	initScene(width,height);
+
+	initAudio();
+
 	initFPS();
-	initHUD(105,105);
+	initHUD(width*5 + 5,height*5 + 5);
 
 	render();
 
@@ -58,6 +82,8 @@ function initScene(width, height){
 
 	player = new Physijs.CapsuleMesh( new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial({color: 0xFFFF00}), 1);
 	scene.add(player);
+
+	playerGridPos = coordToGrid(0,0);
 
 	var jackTexture = new THREE.TextureLoader().load( "./Textures/jack.png" );
 	jackTexture.magFilter = THREE.NearestFilter;
@@ -147,6 +173,8 @@ function makePellet(width, height, x, z){
 	pellet.scale.y = 4;
 	pellet.scale.x = 4;
 
+	pellets[x][z] = pellet;
+
 	return pellet;
 	
 }
@@ -163,6 +191,17 @@ function generateFloor(width,height){
 	var floor = new THREE.Mesh( new THREE.BoxGeometry(width*5,5,height*5), new THREE.MeshBasicMaterial({map: floorTexture, color: 0x777777}), 0);
 	floor.position.y = -5;
 	scene.add(floor);
+
+}
+
+function initAudio(){
+
+	// Found at https://freesound.org/people/klankbeeld/sounds/133100/
+	music = new Audio('Sounds/ambient.wav');
+	music.loop = true;
+	music.play();
+
+	pelletSound = new Audio('Sounds/redrum.wav');
 
 }
 
@@ -228,48 +267,9 @@ function resizeHUD(){
 
 function render(){
 
-	player.rotation.set(0, playerRotation, 0);
-    player.__dirtyRotation = true;
+	updatePlayer();
 
-    var deltaX = 0;
-    var deltaZ = 0;
-
-    var numPressed = 0;
-
-	if( Key.isDown(Key.W) ){
-
-		numPressed++;
-		deltaX += speed * Math.sin(playerRotation);
-		deltaZ += speed * Math.cos(playerRotation);
-
-	}else if( Key.isDown(Key.S) ){
-
-		numPressed++;
-		deltaX -= speed * Math.sin(playerRotation);
-		deltaZ -= speed * Math.cos(playerRotation);
-
-	}
-	if( Key.isDown(Key.A) ){
-
-		numPressed++;
-		deltaX += speed * Math.sin(playerRotation + Math.PI/2);
-		deltaZ += speed * Math.cos(playerRotation + Math.PI/2);
-
-	}else if( Key.isDown(Key.D) ){
-
-		numPressed++;
-		deltaX -= speed * Math.sin(playerRotation + Math.PI/2);
-		deltaZ -= speed * Math.cos(playerRotation + Math.PI/2);
-
-	}
-
-	if( numPressed > 0 ){
-		deltaX /= numPressed;
-		deltaZ /= numPressed;
-
-		player.position.set( player.position.x + deltaX, 0, player.position.z + deltaZ);
-	    player.__dirtyPosition = true;
-	}
+	collectPellets();
 
 	player.setLinearVelocity(new THREE.Vector3(0, 0, 0));
 
@@ -318,5 +318,78 @@ function handleMouseMovement(e){
 
 	}
 	
+}
+
+function coordToGrid(x,z){
+
+	var gX = Math.floor( (x)/5 + (width/2) );
+	var gZ = Math.floor( (z)/5 + (height/2) );
+
+	return [gX,gZ];
+
+}
+
+function updatePlayer(){
+
+	player.rotation.set(0, playerRotation, 0);
+    player.__dirtyRotation = true;
+
+    var deltaX = 0;
+    var deltaZ = 0;
+
+    var numPressed = 0;
+
+	if( Key.isDown(Key.W) ){
+
+		numPressed++;
+		deltaX += speed * Math.sin(playerRotation);
+		deltaZ += speed * Math.cos(playerRotation);
+
+	}else if( Key.isDown(Key.S) ){
+
+		numPressed++;
+		deltaX -= speed * Math.sin(playerRotation);
+		deltaZ -= speed * Math.cos(playerRotation);
+
+	}
+
+	if( Key.isDown(Key.A) ){
+
+		numPressed++;
+		deltaX += speed * Math.sin(playerRotation + Math.PI/2);
+		deltaZ += speed * Math.cos(playerRotation + Math.PI/2);
+
+	}else if( Key.isDown(Key.D) ){
+
+		numPressed++;
+		deltaX -= speed * Math.sin(playerRotation + Math.PI/2);
+		deltaZ -= speed * Math.cos(playerRotation + Math.PI/2);
+
+	}
+
+	if( numPressed > 0 ){
+		deltaX /= numPressed;
+		deltaZ /= numPressed;
+
+		player.position.set( player.position.x + deltaX, 0, player.position.z + deltaZ);
+	    player.__dirtyPosition = true;
+	}
+
+}
+
+function collectPellets(){
+
+	if( playerGridPos != coordToGrid(player.position.x, player.position.z) ){
+
+		playerGridPos = coordToGrid(player.position.x, player.position.z);
+
+		if( pellets[playerGridPos[0]][playerGridPos[1]] != null ){
+
+			pelletSound.play();
+			scene.remove(pellets[playerGridPos[0]][playerGridPos[1]]);
+
+		}
+
+	}
 
 }
