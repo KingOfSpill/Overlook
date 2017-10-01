@@ -22,9 +22,9 @@ const speed = 0.1;
 
 function init(){
 
-	initScene(30,30);
+	initScene(20,20);
 	initFPS();
-	initHUD(155,155);
+	initHUD(105,105);
 
 	render();
 
@@ -91,6 +91,8 @@ function generateWalls(width, height){
 
 			if( map[i][j] && ( Math.abs(i-height/2) > 2 || Math.abs(j-width/2) > 2)  ){
 				scene.add( makeWall(width, height, i, j) );
+			}else if( Math.random() > 0.9 ){
+				scene.add( makePellet(width, height, i, j) );
 			}
 
 		}
@@ -129,6 +131,26 @@ function makeWall(width, height, x, z){
 
 	return box;
 
+}
+
+function makePellet(width, height, x, z){
+
+	var pelletTexture = new THREE.TextureLoader().load( "./Textures/redrum.png" );
+	pelletTexture.magFilter = THREE.NearestFilter;
+	pelletTexture.minFilter = THREE.NearestFilter;
+	pelletTexture.wrapS = THREE.RepeatWrapping;
+	pelletTexture.wrapT = THREE.RepeatWrapping;
+	pelletTexture.repeat.set( 1, 1 );
+
+	var pellet = new THREE.Sprite(new THREE.SpriteMaterial({color: 0x777777, map: pelletTexture}));
+	pellet.position.x = 5*(x-width/2)+2.5;
+	pellet.position.z = 5*(z-height/2)+2.5;
+	pellet.position.y = -0.5;
+	pellet.scale.y = 4;
+	pellet.scale.x = 4;
+
+	return pellet;
+	
 }
 
 function generateFloor(width,height){
@@ -176,7 +198,7 @@ function initHUD(width, height){
 
 	var hud = document.createElement('div');
 	hud.style.position = 'absolute';
-	hud.style.height = 20 + '%';
+	hud.style.height = 30 + '%';
 	hud.style.bottom = 0 + '%';
 	hud.style.border = "thick solid #222233";  
 
@@ -199,9 +221,9 @@ function resizeHUD(){
 	var side;
 
     if( w > h )
-    	side = Math.floor(h*0.2);
+    	side = Math.floor(h*0.3);
     else
-    	side = Math.floor(w*0.2);
+    	side = Math.floor(w*0.3);
 
     hudRenderer.setSize(side,side);
 }
