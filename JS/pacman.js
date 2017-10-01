@@ -11,8 +11,12 @@ var fpsCamera, fpsRenderer;
 
 var hudCamera, hudRenderer;
 
+var clock = new THREE.Clock()
+
 var player;
 var playerRotation = 0;
+
+var jack;
 
 const speed = 0.1;
 
@@ -26,6 +30,29 @@ function init(){
 
 }
 
+function animatedTexture(texture){
+
+	this.delta = 0;
+
+	this.updateTexture = function(delta){
+
+		console.log(delta);
+
+		this.delta += delta;
+
+		if( this.delta > 1){
+			this.delta = 0;
+
+			texture.offset.x += 0.5;
+			while( texture.offset.x >= 1 )
+				texture.offset.x -= 1;
+
+		}
+
+	}
+
+}
+
 function initScene(width, height){
 
 	scene = new Physijs.Scene();
@@ -33,6 +60,22 @@ function initScene(width, height){
 
 	player = new Physijs.CapsuleMesh( new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial({color: 0xFFFF00}), 1);
 	scene.add(player);
+
+	var jackTexture = new THREE.TextureLoader().load( "./Textures/jack.png" );
+	jackTexture.magFilter = THREE.NearestFilter;
+	jackTexture.minFilter = THREE.NearestFilter;
+	jackTexture.wrapS = THREE.RepeatWrapping;
+	jackTexture.wrapT = THREE.RepeatWrapping;
+	jackTexture.repeat.set( 0.5, 1 );
+
+	jack = new animatedTexture( jackTexture );
+
+	var enemy = new THREE.Sprite(new THREE.SpriteMaterial({color: 0x777777, map: jackTexture}));
+	enemy.position.z = 5;
+	enemy.position.y = -0.5;
+	enemy.scale.y = 4;
+	enemy.scale.x = 4;
+	scene.add( enemy );
 
 	generateWalls(width, height);
 	generateFloor(width, height);
@@ -185,6 +228,8 @@ function render(){
     	player.__dirtyPosition = true;
 
 	}
+
+	jack.updateTexture( clock.getDelta() );
 
 	scene.simulate();
 
