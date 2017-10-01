@@ -50,7 +50,7 @@ function init(){
 	initAudio();
 
 	initFPS();
-	initHUD(width*5 + 5,height*5 + 5);
+	initHUD(height*5 + 5,width*5 + 5);
 
 	render();
 
@@ -97,10 +97,14 @@ function initScene(width, height){
 	jack = new animatedTexture( jackTexture );
 
 	var enemy = new THREE.Sprite(new THREE.SpriteMaterial({color: 0x777777, map: jackTexture}));
-	enemy.position.z = 5;
+	enemy.position.z = -20;
 	enemy.position.y = -0.5;
 	enemy.scale.y = 4;
 	enemy.scale.x = 4;
+
+	var enemyMarker = new THREE.Mesh(new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial({color: 0x000033}) );
+	enemyMarker.position.y = 50;
+
 	scene.add( enemy );
 
 	generateWalls(width, height);
