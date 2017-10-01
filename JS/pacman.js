@@ -16,7 +16,7 @@ var clock = new THREE.Clock();
 var player, playerRotation = 0, playerGridPos;
 const speed = 0.15;
 
-const width = 28, height = 31;
+const width = 26, height = 29;
 
 var jack;
 
@@ -24,14 +24,16 @@ var pellets;
 
 var pelletSound, music;
 
+var map;
+
 function array2D(width, height){
 
 	var arr = new Array();
-	for( var i = 0; i < height; i++ ){
+	for( var i = 0; i < width; i++ ){
 
 		arr[i] = new Array();
 
-		for( var j = 0; j < width; j++ )
+		for( var j = 0; j < height; j++ )
 			arr[i][j] = null;
 
 	}
@@ -42,7 +44,7 @@ function array2D(width, height){
 
 function init(){
 
-	pellets = array2D(height,width);
+	pellets = array2D(width,height);
 	initScene(width,height);
 
 	initAudio();
@@ -108,12 +110,12 @@ function initScene(width, height){
 
 function generateWalls(width, height){
 
-	var map = PACMAP.generateMap( height, width );
+	map = PACMAP.generateMap( width, height );
 
 	for( var i = 0; i < map.length; i++){
 		for( var j = 0; j < map[i].length; j++){
 
-			if( map[i][j] && ( Math.abs(i-height/2) > 2 || Math.abs(j-width/2) > 2)  ){
+			if( map[i][j] ){//&& ( Math.abs(i-height/2) > 2 || Math.abs(j-width/2) > 2)  ){
 				scene.add( makeWall(width, height, i, j) );
 			}else if( Math.random() > 0.9 ){
 				scene.add( makePellet(width, height, i, j) );
@@ -228,7 +230,7 @@ function initHUD(width, height){
 	
 	hudRenderer.shadowMap.enabled = true;
 
-	hudCamera = new THREE.OrthographicCamera( width / -2, width / 2, height / 2, height / -2);
+	hudCamera = new THREE.OrthographicCamera( height / -2, height / 2, width / 2, width / -2);
 	hudCamera.position.y = 1000;
 
 	hudCamera.lookAt(scene.position);
@@ -393,6 +395,7 @@ function collectPellets(){
 
 			pelletSound.play();
 			scene.remove(pellets[playerGridPos[0]][playerGridPos[1]]);
+			pellets[playerGridPos[0]][playerGridPos[1]] = null;
 
 		}
 
