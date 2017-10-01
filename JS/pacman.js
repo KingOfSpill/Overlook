@@ -14,9 +14,9 @@ var hudCamera, hudRenderer;
 var clock = new THREE.Clock();
 
 var player, playerRotation = 0, playerGridPos;
-const speed = 0.1;
+const speed = 0.15;
 
-const width = 20, height = 20;
+const width = 28, height = 31;
 
 var jack;
 
@@ -42,7 +42,7 @@ function array2D(width, height){
 
 function init(){
 
-	pellets = array2D(width,height);
+	pellets = array2D(height,width);
 	initScene(width,height);
 
 	initAudio();
@@ -108,7 +108,7 @@ function initScene(width, height){
 
 function generateWalls(width, height){
 
-	var map = PACMAP.generateMap( width, height );
+	var map = PACMAP.generateMap( height, width );
 
 	for( var i = 0; i < map.length; i++){
 		for( var j = 0; j < map[i].length; j++){
@@ -122,14 +122,14 @@ function generateWalls(width, height){
 		}
 	}
 
-	for( var i = 0; i < width; i++ ){
+	for( var i = 0; i < height; i++ ){
 
 		scene.add( makeWall(width, height, -1, i) );
 		scene.add( makeWall(width, height, width, i) );
 
 	}
 
-	for( var i = 0; i < height; i++ ){
+	for( var i = 0; i < width; i++ ){
 
 		scene.add( makeWall(width, height, i, -1) );
 		scene.add( makeWall(width, height, i, height) );
@@ -223,20 +223,21 @@ function initFPS(){
 
 function initHUD(width, height){
 
-	hudRenderer = new THREE.WebGLRenderer();//{ alpha: true });
-	hudRenderer.setClearColor(0x8888FF);
+	hudRenderer = new THREE.WebGLRenderer({ alpha: true });
+	//hudRenderer.setClearColor(0x8888FF);
 	
 	hudRenderer.shadowMap.enabled = true;
 
 	hudCamera = new THREE.OrthographicCamera( width / -2, width / 2, height / 2, height / -2);
-	hudCamera.position.y = 100;
+	hudCamera.position.y = 1000;
 
 	hudCamera.lookAt(scene.position);
 
 	var hud = document.createElement('div');
 	hud.style.position = 'absolute';
-	hud.style.height = 20 + '%';
 	hud.style.bottom = 0 + '%';
+	hud.style.padding = 0 + 'px';
+	hud.style.margin = 0 + 'px';
 	hud.style.border = "thick solid #222233";  
 
 	hud.appendChild( hudRenderer.domElement );
@@ -257,12 +258,17 @@ function resizeHUD(){
 	const h = document.body.clientHeight;
 	var side;
 
-    if( w > h )
-    	side = Math.floor(h*0.2);
-    else
-    	side = Math.floor(w*0.2);
+    if( w > h ){
+    	side = Math.round(h*0.30);
+    	hudRenderer.setSize( (side/height)*width ,side, true);
+    	hudRenderer.setScissor(0,0,(side/height)*width,side)
+    }else{
+    	side = Math.round(w*0.30);
+    	hudRenderer.setSize(side,(side/width)*height, true);
+    	hudRenderer.setScissor(0,0,side,(side/width)*height)
+    }
 
-    hudRenderer.setSize(side,side);
+    
 }
 
 function render(){
