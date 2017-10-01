@@ -1,3 +1,8 @@
+'use strict';
+
+Physijs.scripts.worker = 'Libs/physijs_worker.js';
+Physijs.scripts.ammo = 'ammo.js';
+
 window.onload = init;
 
 var scene;
@@ -7,27 +12,15 @@ var fpsCamera, fpsRenderer;
 var hudCamera, hudRenderer;
 
 var player;
+var playerRotation = 0;
+
+const speed = 0.1;
 
 function init(){
 
-	/*var mapText = document.createElement('div');
-	mapText.style.position = 'absolute';
-	mapText.style.width = 100 + '%';
-	mapText.style.height = 100 + '%';
-	mapText.style.color = "black";
-	mapText.style.fontSize = 2 + 'vw';
-	mapText.style.top = 5 + '%';
-	mapText.style.left = 5 + '%';
-
-	var map = PACMAP.generateMap( 30, 30 );
-	
-	mapText.innerHTML = PACMAP.toHTML( map );
-
-	document.body.appendChild(mapText);*/
-
 	initScene(30,30);
 	initFPS();
-	initHUD(150,150);
+	initHUD(155,155);
 
 	render();
 
@@ -35,10 +28,10 @@ function init(){
 
 function initScene(width, height){
 
-	scene = new THREE.Scene();
+	scene = new Physijs.Scene();
+	scene.setGravity( new THREE.Vector3(0,0,0) );
 
-	player = new THREE.Mesh( new THREE.SphereGeometry(2), new THREE.MeshBasicMaterial({color: 0xFFFF00}), 0);
-	player.position.y = 5;
+	player = new Physijs.CapsuleMesh( new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial({color: 0xFFFF00}), 1);
 	scene.add(player);
 
 	generateWalls(width, height);
@@ -50,23 +43,11 @@ function generateWalls(width, height){
 
 	var map = PACMAP.generateMap( width, height );
 
-	var wallTexture = new THREE.TextureLoader().load( "./Textures/snowyHedge.png" );
-	wallTexture.magFilter = THREE.NearestFilter;
-	wallTexture.minFilter = THREE.NearestFilter;
-	wallTexture.wrapS = THREE.RepeatWrapping;
-	wallTexture.wrapT = THREE.RepeatWrapping;
-	wallTexture.repeat.set( 2, 2 );
-
-	var wallMaterial = new THREE.MeshBasicMaterial({map: wallTexture, color: 0x777777});
-
 	for( var i = 0; i < map.length; i++){
 		for( var j = 0; j < map[i].length; j++){
 
-			if( map[i][j] ){
-				var box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), wallMaterial, 0);
-				box.position.x = 5*(j-width/2)+2.5;
-				box.position.z = 5*(i-height/2)+2.5;
-				scene.add( box );
+			if( map[i][j] && ( Math.abs(i-height/2) > 2 || Math.abs(j-width/2) > 2)  ){
+				scene.add( makeWall(width, height, i, j) );
 			}
 
 		}
@@ -74,31 +55,36 @@ function generateWalls(width, height){
 
 	for( var i = 0; i < width; i++ ){
 
-		var box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), wallMaterial, 0);
-		box.position.x = 5*(width/2)+2.5;
-		box.position.z = 5*(i-height/2)+2.5;
-		scene.add(box);
-
-		box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), wallMaterial, 0);
-		box.position.x = -5*(width/2)+2.5;
-		box.position.z = 5*(i-height/2)+2.5;
-		scene.add(box);
+		scene.add( makeWall(width, height, -1, i) );
+		scene.add( makeWall(width, height, width, i) );
 
 	}
 
 	for( var i = 0; i < height; i++ ){
 
-		var box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), wallMaterial, 0);
-		box.position.x = 5*(i-width/2)+2.5;
-		box.position.z = 5*(height/2)+2.5;
-		scene.add(box);
-
-		box = new THREE.Mesh( new THREE.BoxGeometry(5,5,5), wallMaterial, 0);
-		box.position.x = 5*(i-width/2)+2.5;
-		box.position.z = -5*(height/2)+2.5;
-		scene.add(box);
+		scene.add( makeWall(width, height, i, -1) );
+		scene.add( makeWall(width, height, i, height) );
 
 	}
+
+}
+
+function makeWall(width, height, x, z){
+
+	var wallTexture = new THREE.TextureLoader().load( "./Textures/snowyHedge.png" );
+	wallTexture.magFilter = THREE.NearestFilter;
+	wallTexture.minFilter = THREE.NearestFilter;
+	wallTexture.wrapS = THREE.RepeatWrapping;
+	wallTexture.wrapT = THREE.RepeatWrapping;
+	wallTexture.repeat.set( 2, 3 );
+
+	var wallMaterial = new THREE.MeshBasicMaterial({map: wallTexture, color: 0x777777});
+
+	var box = new Physijs.BoxMesh( new THREE.BoxGeometry(5,7.5,5), wallMaterial, 0);
+	box.position.x = 5*(x-width/2)+2.5;
+	box.position.z = 5*(z-height/2)+2.5;
+
+	return box;
 
 }
 
@@ -127,8 +113,7 @@ function initFPS(){
 	fpsCamera = new THREE.PerspectiveCamera( 45, 1, 0.1, 10000 );
 
 	player.add(fpsCamera);
-	fpsCamera.position.y = -5;
-	fpsCamera.lookAt( new THREE.Vector3(0,-5,10) );
+	fpsCamera.lookAt( new THREE.Vector3(0,0,10) );
 
 	document.getElementById("mainView").appendChild( fpsRenderer.domElement );
 
@@ -180,23 +165,28 @@ function resizeHUD(){
 
 function render(){
 
+	if( Key.isDown(Key.A)){
+		playerRotation += 0.1;
+	}else if( Key.isDown(Key.D)){
+		playerRotation -= 0.1;
+	}
+
+	player.rotation.set(0, playerRotation, 0);
+    player.__dirtyRotation = true;
+
 	if( Key.isDown(Key.W) ){
 
-		player.position.z += Math.cos(player.rotation.y);
-		player.position.x += Math.sin(player.rotation.y);
+		player.position.set( player.position.x + speed * Math.sin(player.rotation.y), 0, player.position.z + speed * Math.cos(player.rotation.y));
+    	player.__dirtyPosition = true;
+
+	}else if( Key.isDown(Key.S) ){
+
+		player.position.set( player.position.x - speed * Math.sin(player.rotation.y), 0, player.position.z - speed * Math.cos(player.rotation.y));
+    	player.__dirtyPosition = true;
 
 	}
-	if( Key.isDown(Key.S) ){
 
-		player.position.z -= Math.cos(player.rotation.y);
-		player.position.x -= Math.sin(player.rotation.y);
-
-	}
-
-	if( Key.isDown(Key.A))
-		player.rotation.y += 0.1;
-	if( Key.isDown(Key.D))
-		player.rotation.y -= 0.1;
+	scene.simulate();
 
 	resizeFPS();
 	fpsRenderer.render( scene, fpsCamera );
