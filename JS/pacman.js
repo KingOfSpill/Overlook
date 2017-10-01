@@ -185,7 +185,7 @@ function initFPS(){
 function initHUD(width, height){
 
 	hudRenderer = new THREE.WebGLRenderer();//{ alpha: true });
-	hudRenderer.setClearColor( 0x8888FF)
+	hudRenderer.setClearColor(0x8888FF);
 	
 	hudRenderer.shadowMap.enabled = true;
 
@@ -196,7 +196,7 @@ function initHUD(width, height){
 
 	var hud = document.createElement('div');
 	hud.style.position = 'absolute';
-	hud.style.height = 30 + '%';
+	hud.style.height = 20 + '%';
 	hud.style.bottom = 0 + '%';
 	hud.style.border = "thick solid #222233";  
 
@@ -219,34 +219,56 @@ function resizeHUD(){
 	var side;
 
     if( w > h )
-    	side = Math.floor(h*0.3);
+    	side = Math.floor(h*0.2);
     else
-    	side = Math.floor(w*0.3);
+    	side = Math.floor(w*0.2);
 
     hudRenderer.setSize(side,side);
 }
 
 function render(){
 
-	if( Key.isDown(Key.A)){
-		playerRotation += 0.1;
-	}else if( Key.isDown(Key.D)){
-		playerRotation -= 0.1;
-	}
-
 	player.rotation.set(0, playerRotation, 0);
     player.__dirtyRotation = true;
 
+    var deltaX = 0;
+    var deltaZ = 0;
+
+    var numPressed = 0;
+
 	if( Key.isDown(Key.W) ){
 
-		player.position.set( player.position.x + speed * Math.sin(player.rotation.y), 0, player.position.z + speed * Math.cos(player.rotation.y));
-    	player.__dirtyPosition = true;
+		numPressed++;
+		deltaX += speed * Math.sin(playerRotation);
+		deltaZ += speed * Math.cos(playerRotation);
 
 	}else if( Key.isDown(Key.S) ){
 
-		player.position.set( player.position.x - speed * Math.sin(player.rotation.y), 0, player.position.z - speed * Math.cos(player.rotation.y));
-    	player.__dirtyPosition = true;
+		numPressed++;
+		deltaX -= speed * Math.sin(playerRotation);
+		deltaZ -= speed * Math.cos(playerRotation);
 
+	}
+	if( Key.isDown(Key.A) ){
+
+		numPressed++;
+		deltaX += speed * Math.sin(playerRotation + Math.PI/2);
+		deltaZ += speed * Math.cos(playerRotation + Math.PI/2);
+
+	}else if( Key.isDown(Key.D) ){
+
+		numPressed++;
+		deltaX -= speed * Math.sin(playerRotation + Math.PI/2);
+		deltaZ -= speed * Math.cos(playerRotation + Math.PI/2);
+
+	}
+
+	if( numPressed > 0 ){
+		deltaX /= numPressed;
+		deltaZ /= numPressed;
+
+		player.position.set( player.position.x + deltaX, 0, player.position.z + deltaZ);
+	    player.__dirtyPosition = true;
 	}
 
 	player.setLinearVelocity(new THREE.Vector3(0, 0, 0));
@@ -263,5 +285,38 @@ function render(){
 	hudRenderer.render( scene, hudCamera );
 
 	requestAnimationFrame( render );
+
+}
+
+window.addEventListener("click", function(){
+
+	fpsRenderer.domElement.requestPointerLock = fpsRenderer.domElement.requestPointerLock || fpsRenderer.domElement.mozRequestPointerLock || fpsRenderer.domElement.webkitRequestPointerLock;
+	fpsRenderer.domElement.requestPointerLock();
+
+});
+
+window.addEventListener("mousemove", function(e){ handleMouseMovement(e) } , false);
+
+function mouseLockChanged(){
+
+	
+		document.removeEventListener("mousemove", handleMouseMovement, false);
+
+}
+
+function handleMouseMovement(e){
+
+	var requestedElement = fpsRenderer.domElement;
+
+	if (document.pointerLockElement === requestedElement || document.mozPointerLockElement === requestedElement || document.webkitPointerLockElement === requestedElement ){
+		
+		var movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
+	
+		playerRotation -= movementX*0.0025;
+
+	}else{
+
+	}
+	
 
 }
