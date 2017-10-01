@@ -36,8 +36,6 @@ function animatedTexture(texture){
 
 	this.updateTexture = function(delta){
 
-		console.log(delta);
-
 		this.delta += delta;
 
 		if( this.delta > 1){
@@ -250,6 +248,8 @@ function render(){
     	player.__dirtyPosition = true;
 
 	}
+
+	player.setLinearVelocity(new THREE.Vector3(0, 0, 0));
 
 	jack.updateTexture( clock.getDelta() );
 
