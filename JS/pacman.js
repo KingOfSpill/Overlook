@@ -27,7 +27,7 @@ var jack = new Array();
 
 var pellets, numPellets = 0;
 
-var pelletSound, music, heresJohnny, mute = false;
+var pelletSound, music, heresJohnny, muted = false, mDown = false;
 
 var map;
 
@@ -114,11 +114,8 @@ function enemy( animatedTexture, sprite ){
 
 	this.update = function(delta){
 
-		if( this.texture.updateTexture(delta) ){
-
+		if( this.texture.updateTexture(delta) && !muted )
 			this.footstep.play();
-
-		}
 
 		this.marker.position.copy(this.sprite.position);
 
@@ -133,7 +130,8 @@ function enemy( animatedTexture, sprite ){
 
 		if( this.gridPosition.every(function(v,i) { return v === playerGridPos[i]})  ){
 			dead = true;
-			heresJohnny.play();
+			if(!muted)
+				heresJohnny.play();
 		}
 
 	}
@@ -445,7 +443,8 @@ function initDivs(){
 	instructions.innerHTML = "Controls:<br/>" + 
 							 "Aim: Mouse<br/>" + 
 							 "Walk: WASD<br/>" + 
-							 "Pause: ESC<br/>"
+							 "Pause: ESC<br/>" +
+							 "Mute: M<br/>"
 
 }
 
@@ -632,6 +631,17 @@ function render(){
 		updatePlayer();
 	}
 
+	if( Key.isDown( Key.M ) )
+		mDown = true;
+	else if( mDown ){
+		mDown = false;
+		muted = !muted;
+		if(muted)
+			music.pause();
+		else
+			music.play();
+	}
+
 	if(unPaused){
 
 		collectPellets();
@@ -719,7 +729,7 @@ function mouseLocked(){
 			document.body.removeChild(centerText);
 			document.body.removeChild(button);
 			document.body.removeChild(instructions);
-			if(!mute)
+			if(!muted)
 				music.play();
 
 		}
@@ -799,7 +809,8 @@ function collectPellets(){
 		if( pellets[playerGridPos[0]][playerGridPos[1]] != null ){
 
 			numPellets--;
-			pelletSound.play();
+			if(!muted)
+				pelletSound.play();
 			scene.remove(pellets[playerGridPos[0]][playerGridPos[1]]);
 			pellets[playerGridPos[0]][playerGridPos[1]] = null;
 
