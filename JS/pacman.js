@@ -33,7 +33,8 @@ var map;
 
 var unPaused = false;
 
-var overlay, centerText, button, centerImage, instructions;
+var overlay, centerText, button, centerImage, instructions
+var myName;
 
 function array2D(width, height){
 
@@ -444,25 +445,26 @@ function initDivs(){
 							 "Aim: Mouse<br/>" + 
 							 "Walk: WASD<br/>" + 
 							 "Pause: ESC<br/>" +
-							 "Mute: M<br/>"
+							 "Mute: M<br/>";
+
+	myName = document.createElement('div');
+	myName.style.position = 'absolute';
+	myName.style.width = 20 + '%';
+	myName.style.textAlign = 'right';
+	myName.style.color = "white";
+	myName.style.fontSize = 1.5 + 'vw';
+	myName.style.bottom = 1 + '%';
+	myName.style.right = 1 + '%';
+	myName.style.fontFamily = "sans-serif";
+	myName.innerHTML = "By: Grant Goodman";
 
 }
 
 function spawnStartScreen(){
 
-	window.removeEventListener("click", onClick);
+	window.addEventListener("click", onClick);
 
-	var name = document.createElement('div');
-	name.style.position = 'absolute';
-	name.style.width = 20 + '%';
-	name.style.textAlign = 'right';
-	name.style.color = "white";
-	name.style.fontSize = 1.5 + 'vw';
-	name.style.bottom = 1 + '%';
-	name.style.right = 1 + '%';
-	name.style.fontFamily = "sans-serif";
-	name.innerHTML = "By: Grant Goodman";
-	document.body.appendChild(name);
+	document.body.appendChild(myName);
 
 	centerImage.src = 'Textures/OverLook.png'
 	document.body.appendChild(centerImage);
@@ -475,29 +477,32 @@ function spawnStartScreen(){
 	button.style.fontFamily = "sans-serif";
 	button.innerHTML = "START";
 
-	button.addEventListener ("click", function() {
+	button.addEventListener("click", removeStartScreen);
+
+	document.body.appendChild(button);
+	
+}
+function removeStartScreen(){
 
 		document.body.removeChild(centerImage);
 		document.body.removeChild(button);
-		document.body.removeChild(name);
+		document.body.removeChild(myName);
 		document.body.removeChild(instructions);
 		hud.style.visibility = 'visible';
 		unPaused = true;
 		window.addEventListener("click", onClick);
 
+		button.removeEventListener("click", removeStartScreen);
+
 		setTimeout( function(){
 			document.addEventListener('pointerlockchange', mouseLocked, false);
 			document.addEventListener('mozpointerlockchange', mouseLocked, false);
+			window.removeEventListener("click", onClick);
 		}, 500);
-	  	
-	}, {once : true});
 
-	document.body.appendChild(button);
-	
 }
 
 function spawnPauseDivs(){
-
 	overlay.style.backgroundColor = 'white';
 	overlay.style.opacity = 0.3;
 	overlay.style.filter = "alpha(opacity=30)";
@@ -518,6 +523,11 @@ function spawnPauseDivs(){
 
 	instructions.style.color = 'red';
 	document.body.appendChild(instructions);
+
+	myName.style.color = 'red';
+	document.body.appendChild(myName);
+
+	window.addEventListener("click", onClick);
 	
 }
 
@@ -724,10 +734,12 @@ function mouseLocked(){
 			music.pause();
 		}else{
 
+			window.removeEventListener("click", onClick);
 			unPaused = true;
 			document.body.removeChild(overlay);
 			document.body.removeChild(centerText);
 			document.body.removeChild(button);
+			document.body.removeChild(myName);
 			document.body.removeChild(instructions);
 			if(!muted)
 				music.play();
