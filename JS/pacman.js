@@ -3,6 +3,9 @@
 Physijs.scripts.worker = 'Libs/physijs_worker.js';
 Physijs.scripts.ammo = 'ammo.js';
 
+document.exitPointerLock = document.exitPointerLock    ||
+                           document.mozExitPointerLock;
+
 window.onload = init;
 
 var scene;
@@ -490,6 +493,11 @@ function spawnDeathDivs(){
 	if( !killed ){
 		killed = true
 
+		document.removeEventListener('pointerlockchange', mouseLocked, false);
+		document.removeEventListener('mozpointerlockchange', mouseLocked, false);
+		document.exitPointerLock();
+		unPaused = false;
+
 		window.removeEventListener("click", onClick);
 
 		var redOverlay = document.createElement('div');
@@ -549,6 +557,11 @@ function spawnWinDivs(){
 
 	if( !won ){
 		won = true
+
+		document.removeEventListener('pointerlockchange', mouseLocked, false);
+		document.removeEventListener('mozpointerlockchange', mouseLocked, false);
+		document.exitPointerLock();
+		unPaused = false;
 
 		window.removeEventListener("click", onClick);
 
@@ -633,9 +646,11 @@ function resizeHUD(){
 
 function render(){
 
-	if(unPaused){
-
+	if(unPaused || dead || won){
 		updatePlayer();
+	}
+
+	if(unPaused){
 
 		collectPellets();
 
@@ -649,9 +664,9 @@ function render(){
 				jack[i].update( delta );
 		}
 
-	}
+		scene.simulate();
 
-	scene.simulate();
+	}
 
 	resizeFPS();
 	fpsRenderer.render( scene, fpsCamera );
