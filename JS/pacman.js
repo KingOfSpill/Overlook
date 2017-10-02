@@ -711,6 +711,7 @@ function mouseLocked(){
 		if( unPaused ){
 			unPaused = false;
 			spawnPauseDivs();
+			music.pause();
 		}else{
 
 			unPaused = true;
@@ -718,6 +719,8 @@ function mouseLocked(){
 			document.body.removeChild(centerText);
 			document.body.removeChild(button);
 			document.body.removeChild(instructions);
+			if(!mute)
+				music.play();
 
 		}
 
