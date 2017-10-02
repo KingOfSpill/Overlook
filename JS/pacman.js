@@ -13,7 +13,7 @@ var hudCamera, hudRenderer;
 
 var clock = new THREE.Clock();
 
-var player, playerRotation = 0, playerGridPos;
+var player, playerRotation = Math.PI, playerGridPos, dead = false;
 const speed = 0.15;
 
 const width = 26, height = 29;
@@ -22,7 +22,7 @@ var jack = new Array();
 
 var pellets;
 
-var pelletSound, music, mute = false;
+var pelletSound, music, heresJohnny, mute = false;
 
 var map;
 
@@ -116,7 +116,12 @@ function enemy( animatedTexture, sprite ){
 
 		this.footstep.volume = Math.min( 1, 20/this.sprite.position.distanceTo(player.position));
 
+		
 
+		if( this.gridPosition.every(function(v,i) { return v === playerGridPos[i]})  ){
+			dead = true;
+			heresJohnny.play();
+		}
 
 	}
 
@@ -193,6 +198,8 @@ function initScene(width, height){
 
 	scene.add( makeJack(0,0) );
 	scene.add( makeJack(width-1,height-1) );
+	scene.add( makeJack(width-1,0) );
+	scene.add( makeJack(0,height-1) );
 
 }
 
@@ -322,6 +329,8 @@ function initAudio(){
 	music.play();
 
 	pelletSound = new Audio('Sounds/redrum.wav');
+
+	heresJohnny = new Audio('Sounds/heres-johnny.wav');
 
 }
 
@@ -469,51 +478,64 @@ function gridToCoord(gX,gZ){
 
 function updatePlayer(){
 
-	player.rotation.set(0, playerRotation, 0);
-    player.__dirtyRotation = true;
+	if( Key.isDown(Key.L) )
+		dead = true;
 
-    var deltaX = 0;
-    var deltaZ = 0;
+	if(!dead){
+		player.rotation.set(0, playerRotation, 0);
+	    player.__dirtyRotation = true;
 
-    var numPressed = 0;
+	    var deltaX = 0;
+	    var deltaZ = 0;
 
-	if( Key.isDown(Key.W) ){
+	    var numPressed = 0;
 
-		numPressed++;
-		deltaX += speed * Math.sin(playerRotation);
-		deltaZ += speed * Math.cos(playerRotation);
+		if( Key.isDown(Key.W) ){
 
-	}else if( Key.isDown(Key.S) ){
+			numPressed++;
+			deltaX += speed * Math.sin(playerRotation);
+			deltaZ += speed * Math.cos(playerRotation);
 
-		numPressed++;
-		deltaX -= speed * Math.sin(playerRotation);
-		deltaZ -= speed * Math.cos(playerRotation);
+		}else if( Key.isDown(Key.S) ){
+
+			numPressed++;
+			deltaX -= speed * Math.sin(playerRotation);
+			deltaZ -= speed * Math.cos(playerRotation);
+
+		}
+
+		if( Key.isDown(Key.A) ){
+
+			numPressed++;
+			deltaX += speed * Math.sin(playerRotation + Math.PI/2);
+			deltaZ += speed * Math.cos(playerRotation + Math.PI/2);
+
+		}else if( Key.isDown(Key.D) ){
+
+			numPressed++;
+			deltaX -= speed * Math.sin(playerRotation + Math.PI/2);
+			deltaZ -= speed * Math.cos(playerRotation + Math.PI/2);
+
+		}
+
+		if( numPressed > 0 ){
+			deltaX /= numPressed;
+			deltaZ /= numPressed;
+
+			player.position.set( player.position.x + deltaX, 0, player.position.z + deltaZ);
+		    player.__dirtyPosition = true;
+		}
+
+		player.setLinearVelocity(new THREE.Vector3(0, 0, 0));
+
+	}else{
+
+		player.position.set(player.position.x, (player.position.y + 2)/2 - 2, player.position.z );
+		player.__dirtyPosition = true;
+		player.rotation.z = (player.rotation.z * 3 + Math.PI/2)/4;
+		player.__dirtyRotation = true;
 
 	}
-
-	if( Key.isDown(Key.A) ){
-
-		numPressed++;
-		deltaX += speed * Math.sin(playerRotation + Math.PI/2);
-		deltaZ += speed * Math.cos(playerRotation + Math.PI/2);
-
-	}else if( Key.isDown(Key.D) ){
-
-		numPressed++;
-		deltaX -= speed * Math.sin(playerRotation + Math.PI/2);
-		deltaZ -= speed * Math.cos(playerRotation + Math.PI/2);
-
-	}
-
-	if( numPressed > 0 ){
-		deltaX /= numPressed;
-		deltaZ /= numPressed;
-
-		player.position.set( player.position.x + deltaX, 0, player.position.z + deltaZ);
-	    player.__dirtyPosition = true;
-	}
-
-	player.setLinearVelocity(new THREE.Vector3(0, 0, 0));
 
 }
 
