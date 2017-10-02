@@ -201,6 +201,7 @@ function initScene(width, height){
 	scene.setGravity( new THREE.Vector3(0,0,0) );
 
 	player = new Physijs.CapsuleMesh( new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial({color: 0xFFFF00}), 1);
+	player.position.z = -5;
 	scene.add(player);
 
 	playerGridPos = coordToGrid(0,0);
