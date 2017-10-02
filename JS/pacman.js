@@ -7,6 +7,8 @@ window.onload = init;
 
 var scene;
 
+var hud;
+
 var fpsCamera, fpsRenderer;
 
 var hudCamera, hudRenderer;
@@ -371,11 +373,12 @@ function initHUD(width, height){
 
 	hudCamera.lookAt(scene.position);
 
-	var hud = document.createElement('div');
+	hud = document.createElement('div');
 	hud.style.position = 'absolute';
 	hud.style.bottom = 0 + '%';
 	hud.style.padding = 0 + 'px';
 	hud.style.margin = 0 + 'px';
+	hud.style.visibility = 'hidden';
 	hud.style.border = "thick solid #222233";  
 
 	hud.appendChild( hudRenderer.domElement );
@@ -419,6 +422,7 @@ function spawnStartScreen(){
 
 		document.body.removeChild(overLook);
 		document.body.removeChild(start);
+		hud.style.visibility = 'visible';
 		unPaused = true;
 		window.addEventListener("click", onClick);
 
