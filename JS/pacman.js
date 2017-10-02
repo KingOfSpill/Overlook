@@ -20,11 +20,15 @@ const width = 26, height = 29;
 
 var jack = new Array();
 
-var pellets;
+var pellets, numPellets = 0;
 
 var pelletSound, music, heresJohnny, mute = false;
 
 var map;
+
+var unPaused = false;
+
+var overlay, centerText, button;
 
 function array2D(width, height){
 
@@ -51,6 +55,8 @@ function init(){
 
 	initFPS();
 	initHUD(height*5 + 5,width*5 + 5);
+
+	spawnStartScreen();
 
 	render();
 
@@ -301,6 +307,7 @@ function makePellet(width, height, x, z){
 	marker.position.y = -0.5;
 
 	pellets[x][z] = marker;
+	numPellets++;
 
 	return marker;
 	
@@ -374,6 +381,104 @@ function initHUD(width, height){
 	hud.appendChild( hudRenderer.domElement );
 	document.body.appendChild(hud);
 
+}
+
+function spawnStartScreen(){
+
+	window.removeEventListener("click", onClick);
+
+	var overLook = document.createElement('img');
+	overLook.src = 'Textures/OverLook.png'
+	overLook.style.position = 'absolute';
+	overLook.style.height = 40 + '%';
+	overLook.style.width = 100 + '%';
+	overLook.style.textAlign = 'center';
+	overLook.style.top = 10 + '%';
+	overLook.style.left = 0 + '%';
+	overLook.style.padding = 0 + 'px';
+	overLook.style.margin = 0 + 'px';
+	document.body.appendChild(overLook);
+
+	var start = document.createElement('button');
+	start.style.position = 'absolute';
+	start.style.height = 20 + '%';
+	start.style.width = 20 + '%';
+	start.style.textAlign = 'center';
+	start.style.top = 60 + '%';
+	start.style.left = 40 + '%';
+	start.style.padding = 0 + 'px';
+	start.style.margin = 0 + 'px';
+	start.style.fontSize = 2 + 'vw';
+	start.style.backgroundColor = 'lightred';
+	start.style.borderRadius = 20 + '%';
+	start.style.color = 'black';
+	start.style.fontFamily = "sans-serif";
+	start.innerHTML = "START";
+
+	start.addEventListener ("click", function() {
+
+		document.body.removeChild(overLook);
+		document.body.removeChild(start);
+		unPaused = true;
+		window.addEventListener("click", onClick);
+
+		setTimeout( function(){
+			document.addEventListener('pointerlockchange', mouseLocked, false);
+			document.addEventListener('mozpointerlockchange', mouseLocked, false);
+		}, 500);
+	  	
+	}, {once : true});
+
+	document.body.appendChild(start);
+	
+}
+
+function spawnPauseDivs(){
+
+	overlay = document.createElement('div');
+	overlay.style.position = 'absolute';
+	overlay.style.height = 100 + '%';
+	overlay.style.width = 100 + '%';
+	overlay.style.top = 0 + '%';
+	overlay.style.padding = 0 + 'px';
+	overlay.style.margin = 0 + 'px';
+	overlay.style.backgroundColor = 'white';
+	overlay.style.opacity = 0.3;
+	overlay.style.filter = "alpha(opacity=30)";
+	document.body.appendChild(overlay);
+
+	centerText = document.createElement('div');
+	centerText.style.position = 'absolute';
+	centerText.style.height = 40 + '%';
+	centerText.style.width = 40 + '%';
+	centerText.style.textAlign = 'center';
+	centerText.style.top = 40 + '%';
+	centerText.style.left = 30 + '%';
+	centerText.style.padding = 0 + 'px';
+	centerText.style.margin = 0 + 'px';
+	centerText.style.fontSize = 6 + 'vw';
+	centerText.style.color = 'red';
+	centerText.style.fontFamily = "sans-serif";
+	centerText.innerHTML = "PAUSED";
+	document.body.appendChild(centerText);
+
+	button = document.createElement('button');
+	button.style.position = 'absolute';
+	button.style.height = 20 + '%';
+	button.style.width = 20 + '%';
+	button.style.textAlign = 'center';
+	button.style.top = 60 + '%';
+	button.style.left = 40 + '%';
+	button.style.padding = 0 + 'px';
+	button.style.margin = 0 + 'px';
+	button.style.fontSize = 2 + 'vw';
+	button.style.backgroundColor = 'lightred';
+	button.style.borderRadius = 20 + '%';
+	button.style.color = 'red';
+	button.style.fontFamily = "sans-serif";
+	button.innerHTML = "PLAY";
+	document.body.appendChild(button);
+	
 }
 
 function spawnDeathDivs(){
@@ -524,15 +629,22 @@ function resizeHUD(){
 
 function render(){
 
-	updatePlayer();
+	if(unPaused){
 
-	collectPellets();
+		updatePlayer();
 
-	if( !dead ){
-		const delta = clock.getDelta();
+		collectPellets();
 
-		for( var i = 0; i < jack.length; i++)
-			jack[i].update( delta );
+		if( numPellets == 0 )
+			spawnWinDivs();
+
+		if( !dead ){
+			const delta = clock.getDelta();
+
+			for( var i = 0; i < jack.length; i++)
+				jack[i].update( delta );
+		}
+
 	}
 
 	scene.simulate();
@@ -548,8 +660,6 @@ function render(){
 
 }
 
-window.addEventListener("click", onClick);
-
 function onClick(){
 
 	fpsRenderer.domElement.requestPointerLock = fpsRenderer.domElement.requestPointerLock || fpsRenderer.domElement.mozRequestPointerLock || fpsRenderer.domElement.webkitRequestPointerLock;
@@ -558,10 +668,6 @@ function onClick(){
 }
 
 window.addEventListener("mousemove", function(e){ handleMouseMovement(e) } , false);
-
-function mouseLockChanged(){
-	document.removeEventListener("mousemove", handleMouseMovement, false);
-}
 
 function handleMouseMovement(e){
 
@@ -597,13 +703,27 @@ function gridToCoord(gX,gZ){
 
 }
 
-function updatePlayer(){
+function mouseLocked(){
 
-	if( Key.isDown(Key.R) )
-		spawnWinDivs();
+	if( !winning || !dead ){
 
-	if( Key.isDown(Key.L) )
-		dead = true;
+		if( unPaused ){
+			unPaused = false;
+			spawnPauseDivs();
+		}else{
+
+			unPaused = true;
+			document.body.removeChild(overlay);
+			document.body.removeChild(centerText);
+			document.body.removeChild(button);
+
+		}
+
+	}
+
+}
+
+function updatePlayer(){		
 
 	if(!dead){
 		player.rotation.set(0, playerRotation, 0);
@@ -673,6 +793,7 @@ function collectPellets(){
 
 		if( pellets[playerGridPos[0]][playerGridPos[1]] != null ){
 
+			numPellets--;
 			pelletSound.play();
 			scene.remove(pellets[playerGridPos[0]][playerGridPos[1]]);
 			pellets[playerGridPos[0]][playerGridPos[1]] = null;
