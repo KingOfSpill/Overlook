@@ -18,7 +18,7 @@ const speed = 0.15;
 
 const width = 26, height = 29;
 
-var jack;
+var jack = new Array();
 
 var pellets;
 
@@ -56,22 +56,102 @@ function init(){
 
 }
 
-function animatedTexture(texture){
+function animatedTexture(texture, numFrames, frameTime){
 
 	this.delta = 0;
+	this.numFrames = numFrames;
+	this.frameTime = frameTime;
 
 	this.updateTexture = function(delta){
 
 		this.delta += delta;
 
-		if( this.delta > 1){
-			this.delta = 0;
+		if( this.delta > this.frameTime ){
+			this.delta -= this.frameTime;
 
-			texture.offset.x += 0.5;
+			texture.offset.x += 1/numFrames;
 			while( texture.offset.x >= 1 )
 				texture.offset.x -= 1;
 
 		}
+
+	}
+
+}
+
+function enemy( animatedTexture, sprite ){
+
+	this.texture = animatedTexture;
+	this.sprite = sprite;
+
+	this.targetPosition = this.sprite.position.clone();
+	this.gridPosition = coordToGrid(this.sprite.position.x, this.sprite.position.z);
+	this.lastGridPosition = coordToGrid(this.sprite.position.x, this.sprite.position.z);
+
+	this.update = function(delta){
+
+		this.texture.updateTexture(delta);
+
+		if( this.sprite.position.distanceTo( this.targetPosition ) > 1 )
+			this.sprite.position.lerp( this.targetPosition, speed/this.sprite.position.distanceTo(this.targetPosition) );
+		else
+			this.findNewTarget();
+
+	}
+
+	this.findNewTarget = function(){
+
+		this.lastGridPosition = this.gridPosition;
+		this.gridPosition = coordToGrid(this.sprite.position.x, this.sprite.position.z);
+
+		const x = this.gridPosition[0];
+		const z = this.gridPosition[1];
+
+		var dir;
+
+		//We want to randomize the 4 possible directions and go to the first one which was available
+		var a = [0,1,2,3];
+		var j, k, i;
+	    for (i = a.length; i; i--) {
+	        j = Math.floor(Math.random() * i);
+	        k = a[i - 1];
+	        a[i - 1] = a[j];
+	        a[j] = k;
+	    }
+
+	    for( var l = 0; l < a.length; l++ ){
+
+	    	if( this.checkNeighbor(a[l],x,z) ){
+	    		dir = a[l];
+	    		break;
+	    	}
+
+	    }
+
+		if(dir == 0)
+			this.targetPosition = gridToCoord( x, z-1 ).setComponent(1,this.sprite.position.y);
+		else if(dir == 1)
+			this.targetPosition = gridToCoord( x+1, z ).setComponent(1,this.sprite.position.y);
+		else if(dir == 2)
+			this.targetPosition = gridToCoord( x, z+1 ).setComponent(1,this.sprite.position.y);
+		else if(dir == 3)
+			this.targetPosition = gridToCoord( x-1, z ).setComponent(1,this.sprite.position.y);
+
+
+	}
+
+	this.checkNeighbor = function(dir, x, z){
+
+		if(dir == 0 && z-1 >= 0 && this.lastGridPosition[1] != z-1)
+			return !map[x][z-1];
+		else if(dir == 1 && x+1 < width && this.lastGridPosition[0] != x+1)
+			return !map[x+1][z];
+		else if(dir == 2 && z+1 < height && this.lastGridPosition[1] != z+1)
+			return !map[x][z+1];
+		else if(dir == 3 && x-1 >= 0 && this.lastGridPosition[1] != z-1)
+			return !map[x-1][z];
+
+		return false;
 
 	}
 
@@ -87,6 +167,16 @@ function initScene(width, height){
 
 	playerGridPos = coordToGrid(0,0);
 
+	generateWalls(width, height);
+	generateFloor(width, height);
+
+	scene.add( makeJack(0,0) );
+	scene.add( makeJack(width-1,height-1) );
+
+}
+
+function makeJack(x,z){
+
 	var jackTexture = new THREE.TextureLoader().load( "./Textures/jack.png" );
 	jackTexture.magFilter = THREE.NearestFilter;
 	jackTexture.minFilter = THREE.NearestFilter;
@@ -94,21 +184,17 @@ function initScene(width, height){
 	jackTexture.wrapT = THREE.RepeatWrapping;
 	jackTexture.repeat.set( 0.5, 1 );
 
-	jack = new animatedTexture( jackTexture );
+	var jackSprite = new THREE.Sprite(new THREE.SpriteMaterial({color: 0x777777, map: jackTexture}));
+	jackSprite.position.copy(gridToCoord(x,z));
+	jackSprite.position.y = -0.5;
+	jackSprite.scale.y = 4;
+	jackSprite.scale.x = 4;
 
-	var enemy = new THREE.Sprite(new THREE.SpriteMaterial({color: 0x777777, map: jackTexture}));
-	enemy.position.z = -20;
-	enemy.position.y = -0.5;
-	enemy.scale.y = 4;
-	enemy.scale.x = 4;
+	var j = new enemy(new animatedTexture( jackTexture, 2, 1 ), jackSprite);
 
-	var enemyMarker = new THREE.Mesh(new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial({color: 0x000033}) );
-	enemyMarker.position.y = 50;
+	jack.push( j );
 
-	scene.add( enemy );
-
-	generateWalls(width, height);
-	generateFloor(width, height);
+	return j.sprite;
 
 }
 
@@ -283,9 +369,10 @@ function render(){
 
 	collectPellets();
 
-	player.setLinearVelocity(new THREE.Vector3(0, 0, 0));
+	const delta = clock.getDelta();
 
-	jack.updateTexture( clock.getDelta() );
+	for( var i = 0; i < jack.length; i++)
+		jack[i].update( delta );
 
 	scene.simulate();
 
@@ -334,10 +421,19 @@ function handleMouseMovement(e){
 
 function coordToGrid(x,z){
 
-	var gX = Math.floor( (x)/5 + (width/2) );
-	var gZ = Math.floor( (z)/5 + (height/2) );
+	const gX = Math.floor( (x)/5 + (width/2) );
+	const gZ = Math.floor( (z)/5 + (height/2) );
 
 	return [gX,gZ];
+
+}
+
+function gridToCoord(gX,gZ){
+
+	const x = 5*(gX-width/2)+2.5;
+	const z = 5*(gZ-height/2)+2.5;
+
+	return new THREE.Vector3(x,0,z);
 
 }
 
@@ -386,6 +482,8 @@ function updatePlayer(){
 		player.position.set( player.position.x + deltaX, 0, player.position.z + deltaZ);
 	    player.__dirtyPosition = true;
 	}
+
+	player.setLinearVelocity(new THREE.Vector3(0, 0, 0));
 
 }
 
