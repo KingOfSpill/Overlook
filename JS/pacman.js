@@ -33,7 +33,7 @@ var map;
 
 var unPaused = false;
 
-var overlay, centerText, button, centerImage;
+var overlay, centerText, button, centerImage, instructions;
 
 function array2D(width, height){
 
@@ -432,14 +432,43 @@ function initDivs(){
 	button.style.margin = 0 + 'px';
 	button.style.borderRadius = 20 + '%';
 
+	instructions = document.createElement('div');
+	instructions.style.position = 'absolute';
+	instructions.style.width = 20 + '%';
+	instructions.style.height = 40 + '%';
+	instructions.style.color = "white";
+	instructions.style.textAlign = 'left';
+	instructions.style.fontSize = 3 + 'vw';
+	instructions.style.bottom = 5 + '%';
+	instructions.style.left = 5 + '%';
+	instructions.style.fontFamily = "sans-serif";
+	instructions.innerHTML = "Controls:<br/>" + 
+							 "Aim: Mouse<br/>" + 
+							 "Walk: WASD<br/>" + 
+							 "Pause: ESC<br/>"
+
 }
 
 function spawnStartScreen(){
 
 	window.removeEventListener("click", onClick);
 
+	var name = document.createElement('div');
+	name.style.position = 'absolute';
+	name.style.width = 20 + '%';
+	name.style.textAlign = 'right';
+	name.style.color = "white";
+	name.style.fontSize = 1.5 + 'vw';
+	name.style.bottom = 1 + '%';
+	name.style.right = 1 + '%';
+	name.style.fontFamily = "sans-serif";
+	name.innerHTML = "By: Grant Goodman";
+	document.body.appendChild(name);
+
 	centerImage.src = 'Textures/OverLook.png'
 	document.body.appendChild(centerImage);
+
+	document.body.appendChild(instructions);
 
 	button.style.fontSize = 2 + 'vw';
 	button.style.backgroundColor = 'lightred';
@@ -451,6 +480,8 @@ function spawnStartScreen(){
 
 		document.body.removeChild(centerImage);
 		document.body.removeChild(button);
+		document.body.removeChild(name);
+		document.body.removeChild(instructions);
 		hud.style.visibility = 'visible';
 		unPaused = true;
 		window.addEventListener("click", onClick);
@@ -485,6 +516,9 @@ function spawnPauseDivs(){
 	button.style.fontFamily = "sans-serif";
 	button.innerHTML = "PLAY";
 	document.body.appendChild(button);
+
+	instructions.style.color = 'red';
+	document.body.appendChild(instructions);
 	
 }
 
@@ -683,6 +717,7 @@ function mouseLocked(){
 			document.body.removeChild(overlay);
 			document.body.removeChild(centerText);
 			document.body.removeChild(button);
+			document.body.removeChild(instructions);
 
 		}
 
