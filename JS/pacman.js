@@ -22,7 +22,7 @@ var jack = new Array();
 
 var pellets;
 
-var pelletSound, music;
+var pelletSound, music, mute = false;
 
 var map;
 
@@ -58,7 +58,7 @@ function init(){
 
 function animatedTexture(texture, numFrames, frameTime){
 
-	this.delta = 0;
+	this.delta = -(Math.random());
 	this.numFrames = numFrames;
 	this.frameTime = frameTime;
 
@@ -73,7 +73,11 @@ function animatedTexture(texture, numFrames, frameTime){
 			while( texture.offset.x >= 1 )
 				texture.offset.x -= 1;
 
+			return true;
+
 		}
+
+		return false;
 
 	}
 
@@ -88,14 +92,25 @@ function enemy( animatedTexture, sprite ){
 	this.gridPosition = coordToGrid(this.sprite.position.x, this.sprite.position.z);
 	this.lastGridPosition = coordToGrid(this.sprite.position.x, this.sprite.position.z);
 
+	// Found at https://freesound.org/people/iujhu/sounds/269855/
+	this.footstep = new Audio('Sounds/footstep.wav');
+
 	this.update = function(delta){
 
-		this.texture.updateTexture(delta);
+		if( this.texture.updateTexture(delta) ){
+
+			this.footstep.play();
+
+		}
 
 		if( this.sprite.position.distanceTo( this.targetPosition ) > 1 )
 			this.sprite.position.lerp( this.targetPosition, speed/this.sprite.position.distanceTo(this.targetPosition) );
 		else
 			this.findNewTarget();
+
+		this.footstep.volume = Math.min( 1, 20/this.sprite.position.distanceTo(player.position));
+
+
 
 	}
 
