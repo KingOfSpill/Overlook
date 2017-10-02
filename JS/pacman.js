@@ -13,7 +13,7 @@ var hudCamera, hudRenderer;
 
 var clock = new THREE.Clock();
 
-var player, playerRotation = Math.PI, playerGridPos, dead = false;
+var player, playerRotation = Math.PI, playerGridPos, dead = false, killed = false;
 const speed = 0.15;
 
 const width = 26, height = 29;
@@ -376,6 +376,67 @@ function initHUD(width, height){
 
 }
 
+function spawnDeathDivs(){
+
+	if( !killed ){
+		killed = true
+
+		window.removeEventListener("click", onClick);
+
+		var redOverlay = document.createElement('div');
+		redOverlay.style.position = 'absolute';
+		redOverlay.style.height = 100 + '%';
+		redOverlay.style.width = 100 + '%';
+		redOverlay.style.top = 0 + '%';
+		redOverlay.style.padding = 0 + 'px';
+		redOverlay.style.margin = 0 + 'px';
+		redOverlay.style.backgroundColor = 'red';
+		redOverlay.style.opacity = 0.3;
+		redOverlay.style.filter = "alpha(opacity=30)";
+		document.body.appendChild(redOverlay);
+
+		var youDied = document.createElement('div');
+		youDied.style.position = 'absolute';
+		youDied.style.height = 40 + '%';
+		youDied.style.width = 40 + '%';
+		youDied.style.textAlign = 'center';
+		youDied.style.top = 40 + '%';
+		youDied.style.left = 30 + '%';
+		youDied.style.padding = 0 + 'px';
+		youDied.style.margin = 0 + 'px';
+		youDied.style.fontSize = 6 + 'vw';
+		youDied.style.color = 'red';
+		youDied.style.fontFamily = "sans-serif";
+		youDied.innerHTML = "YOU DIED";
+		document.body.appendChild(youDied);
+
+		var playAgain = document.createElement('button');
+		playAgain.style.position = 'absolute';
+		playAgain.style.height = 20 + '%';
+		playAgain.style.width = 20 + '%';
+		playAgain.style.textAlign = 'center';
+		playAgain.style.top = 60 + '%';
+		playAgain.style.left = 40 + '%';
+		playAgain.style.padding = 0 + 'px';
+		playAgain.style.margin = 0 + 'px';
+		playAgain.style.fontSize = 2 + 'vw';
+		playAgain.style.backgroundColor = 'lightred';
+		playAgain.style.borderRadius = 20 + '%';
+		playAgain.style.color = 'red';
+		playAgain.style.fontFamily = "sans-serif";
+		playAgain.innerHTML = "PLAY AGAIN?";
+
+		playAgain.addEventListener ("click", function() {
+		  location.reload();
+		});
+
+		document.body.appendChild(playAgain);
+
+	}
+	
+}
+
+
 function resizeFPS() {
 	const w = document.body.clientWidth;
 	const h = document.body.clientHeight;
@@ -408,10 +469,12 @@ function render(){
 
 	collectPellets();
 
-	const delta = clock.getDelta();
+	if( !dead ){
+		const delta = clock.getDelta();
 
-	for( var i = 0; i < jack.length; i++)
-		jack[i].update( delta );
+		for( var i = 0; i < jack.length; i++)
+			jack[i].update( delta );
+	}
 
 	scene.simulate();
 
@@ -426,20 +489,19 @@ function render(){
 
 }
 
-window.addEventListener("click", function(){
+window.addEventListener("click", onClick);
+
+function onClick(){
 
 	fpsRenderer.domElement.requestPointerLock = fpsRenderer.domElement.requestPointerLock || fpsRenderer.domElement.mozRequestPointerLock || fpsRenderer.domElement.webkitRequestPointerLock;
 	fpsRenderer.domElement.requestPointerLock();
 
-});
+}
 
 window.addEventListener("mousemove", function(e){ handleMouseMovement(e) } , false);
 
 function mouseLockChanged(){
-
-	
-		document.removeEventListener("mousemove", handleMouseMovement, false);
-
+	document.removeEventListener("mousemove", handleMouseMovement, false);
 }
 
 function handleMouseMovement(e){
@@ -534,6 +596,8 @@ function updatePlayer(){
 		player.__dirtyPosition = true;
 		player.rotation.z = (player.rotation.z * 3 + Math.PI/2)/4;
 		player.__dirtyRotation = true;
+
+		spawnDeathDivs();
 
 	}
 
