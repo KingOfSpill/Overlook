@@ -33,7 +33,7 @@ var map;
 
 var unPaused = false;
 
-var overlay, centerText, button;
+var overlay, centerText, button, centerImage;
 
 function array2D(width, height){
 
@@ -60,6 +60,8 @@ function init(){
 
 	initFPS();
 	initHUD(height*5 + 5,width*5 + 5);
+
+	initDivs();
 
 	spawnStartScreen();
 
@@ -389,42 +391,66 @@ function initHUD(width, height){
 
 }
 
+function initDivs(){
+
+	centerImage = document.createElement('img');
+	centerImage.style.position = 'absolute';
+	centerImage.style.height = 40 + '%';
+	centerImage.style.width = 100 + '%';
+	centerImage.style.textAlign = 'center';
+	centerImage.style.top = 10 + '%';
+	centerImage.style.left = 0 + '%';
+	centerImage.style.padding = 0 + 'px';
+	centerImage.style.margin = 0 + 'px';
+
+	overlay = document.createElement('div');
+	overlay.style.position = 'absolute';
+	overlay.style.height = 100 + '%';
+	overlay.style.width = 100 + '%';
+	overlay.style.top = 0 + '%';
+	overlay.style.padding = 0 + 'px';
+	overlay.style.margin = 0 + 'px';
+
+	centerText = document.createElement('div');
+	centerText.style.position = 'absolute';
+	centerText.style.height = 40 + '%';
+	centerText.style.width = 40 + '%';
+	centerText.style.textAlign = 'center';
+	centerText.style.top = 40 + '%';
+	centerText.style.left = 30 + '%';
+	centerText.style.padding = 0 + 'px';
+	centerText.style.margin = 0 + 'px';
+
+	button = document.createElement('button');
+	button.style.position = 'absolute';
+	button.style.height = 20 + '%';
+	button.style.width = 20 + '%';
+	button.style.textAlign = 'center';
+	button.style.top = 60 + '%';
+	button.style.left = 40 + '%';
+	button.style.padding = 0 + 'px';
+	button.style.margin = 0 + 'px';
+	button.style.borderRadius = 20 + '%';
+
+}
+
 function spawnStartScreen(){
 
 	window.removeEventListener("click", onClick);
 
-	var overLook = document.createElement('img');
-	overLook.src = 'Textures/OverLook.png'
-	overLook.style.position = 'absolute';
-	overLook.style.height = 40 + '%';
-	overLook.style.width = 100 + '%';
-	overLook.style.textAlign = 'center';
-	overLook.style.top = 10 + '%';
-	overLook.style.left = 0 + '%';
-	overLook.style.padding = 0 + 'px';
-	overLook.style.margin = 0 + 'px';
-	document.body.appendChild(overLook);
+	centerImage.src = 'Textures/OverLook.png'
+	document.body.appendChild(centerImage);
 
-	var start = document.createElement('button');
-	start.style.position = 'absolute';
-	start.style.height = 20 + '%';
-	start.style.width = 20 + '%';
-	start.style.textAlign = 'center';
-	start.style.top = 60 + '%';
-	start.style.left = 40 + '%';
-	start.style.padding = 0 + 'px';
-	start.style.margin = 0 + 'px';
-	start.style.fontSize = 2 + 'vw';
-	start.style.backgroundColor = 'lightred';
-	start.style.borderRadius = 20 + '%';
-	start.style.color = 'black';
-	start.style.fontFamily = "sans-serif";
-	start.innerHTML = "START";
+	button.style.fontSize = 2 + 'vw';
+	button.style.backgroundColor = 'lightred';
+	button.style.color = 'black';
+	button.style.fontFamily = "sans-serif";
+	button.innerHTML = "START";
 
-	start.addEventListener ("click", function() {
+	button.addEventListener ("click", function() {
 
-		document.body.removeChild(overLook);
-		document.body.removeChild(start);
+		document.body.removeChild(centerImage);
+		document.body.removeChild(button);
 		hud.style.visibility = 'visible';
 		unPaused = true;
 		window.addEventListener("click", onClick);
@@ -436,51 +462,25 @@ function spawnStartScreen(){
 	  	
 	}, {once : true});
 
-	document.body.appendChild(start);
+	document.body.appendChild(button);
 	
 }
 
 function spawnPauseDivs(){
 
-	overlay = document.createElement('div');
-	overlay.style.position = 'absolute';
-	overlay.style.height = 100 + '%';
-	overlay.style.width = 100 + '%';
-	overlay.style.top = 0 + '%';
-	overlay.style.padding = 0 + 'px';
-	overlay.style.margin = 0 + 'px';
 	overlay.style.backgroundColor = 'white';
 	overlay.style.opacity = 0.3;
 	overlay.style.filter = "alpha(opacity=30)";
 	document.body.appendChild(overlay);
 
-	centerText = document.createElement('div');
-	centerText.style.position = 'absolute';
-	centerText.style.height = 40 + '%';
-	centerText.style.width = 40 + '%';
-	centerText.style.textAlign = 'center';
-	centerText.style.top = 40 + '%';
-	centerText.style.left = 30 + '%';
-	centerText.style.padding = 0 + 'px';
-	centerText.style.margin = 0 + 'px';
 	centerText.style.fontSize = 6 + 'vw';
 	centerText.style.color = 'red';
 	centerText.style.fontFamily = "sans-serif";
 	centerText.innerHTML = "PAUSED";
 	document.body.appendChild(centerText);
 
-	button = document.createElement('button');
-	button.style.position = 'absolute';
-	button.style.height = 20 + '%';
-	button.style.width = 20 + '%';
-	button.style.textAlign = 'center';
-	button.style.top = 60 + '%';
-	button.style.left = 40 + '%';
-	button.style.padding = 0 + 'px';
-	button.style.margin = 0 + 'px';
 	button.style.fontSize = 2 + 'vw';
 	button.style.backgroundColor = 'lightred';
-	button.style.borderRadius = 20 + '%';
 	button.style.color = 'red';
 	button.style.fontFamily = "sans-serif";
 	button.innerHTML = "PLAY";
@@ -500,54 +500,28 @@ function spawnDeathDivs(){
 
 		window.removeEventListener("click", onClick);
 
-		var redOverlay = document.createElement('div');
-		redOverlay.style.position = 'absolute';
-		redOverlay.style.height = 100 + '%';
-		redOverlay.style.width = 100 + '%';
-		redOverlay.style.top = 0 + '%';
-		redOverlay.style.padding = 0 + 'px';
-		redOverlay.style.margin = 0 + 'px';
-		redOverlay.style.backgroundColor = 'red';
-		redOverlay.style.opacity = 0.3;
-		redOverlay.style.filter = "alpha(opacity=30)";
-		document.body.appendChild(redOverlay);
+		overlay.style.backgroundColor = 'red';
+		overlay.style.opacity = 0.3;
+		overlay.style.filter = "alpha(opacity=30)";
+		document.body.appendChild(overlay);
 
-		var youDied = document.createElement('div');
-		youDied.style.position = 'absolute';
-		youDied.style.height = 40 + '%';
-		youDied.style.width = 40 + '%';
-		youDied.style.textAlign = 'center';
-		youDied.style.top = 40 + '%';
-		youDied.style.left = 30 + '%';
-		youDied.style.padding = 0 + 'px';
-		youDied.style.margin = 0 + 'px';
-		youDied.style.fontSize = 6 + 'vw';
-		youDied.style.color = 'red';
-		youDied.style.fontFamily = "sans-serif";
-		youDied.innerHTML = "YOU DIED";
-		document.body.appendChild(youDied);
+		centerText.style.fontSize = 6 + 'vw';
+		centerText.style.color = 'red';
+		centerText.style.fontFamily = "sans-serif";
+		centerText.innerHTML = "YOU DIED";
+		document.body.appendChild(centerText);
 
-		var playAgain = document.createElement('button');
-		playAgain.style.position = 'absolute';
-		playAgain.style.height = 20 + '%';
-		playAgain.style.width = 20 + '%';
-		playAgain.style.textAlign = 'center';
-		playAgain.style.top = 60 + '%';
-		playAgain.style.left = 40 + '%';
-		playAgain.style.padding = 0 + 'px';
-		playAgain.style.margin = 0 + 'px';
-		playAgain.style.fontSize = 2 + 'vw';
-		playAgain.style.backgroundColor = 'lightred';
-		playAgain.style.borderRadius = 20 + '%';
-		playAgain.style.color = 'red';
-		playAgain.style.fontFamily = "sans-serif";
-		playAgain.innerHTML = "PLAY AGAIN?";
+		button.style.fontSize = 2 + 'vw';
+		button.style.backgroundColor = 'lightred';
+		button.style.color = 'red';
+		button.style.fontFamily = "sans-serif";
+		button.innerHTML = "PLAY AGAIN?";
 
-		playAgain.addEventListener ("click", function() {
+		button.addEventListener ("click", function() {
 		  location.reload();
 		});
 
-		document.body.appendChild(playAgain);
+		document.body.appendChild(button);
 
 	}
 	
@@ -565,54 +539,28 @@ function spawnWinDivs(){
 
 		window.removeEventListener("click", onClick);
 
-		var redOverlay = document.createElement('div');
-		redOverlay.style.position = 'absolute';
-		redOverlay.style.height = 100 + '%';
-		redOverlay.style.width = 100 + '%';
-		redOverlay.style.top = 0 + '%';
-		redOverlay.style.padding = 0 + 'px';
-		redOverlay.style.margin = 0 + 'px';
-		redOverlay.style.backgroundColor = 'white';
-		redOverlay.style.opacity = 0.3;
-		redOverlay.style.filter = "alpha(opacity=30)";
-		document.body.appendChild(redOverlay);
+		overlay.style.backgroundColor = 'white';
+		overlay.style.opacity = 0.3;
+		overlay.style.filter = "alpha(opacity=30)";
+		document.body.appendChild(overlay);
 
-		var youDied = document.createElement('div');
-		youDied.style.position = 'absolute';
-		youDied.style.height = 40 + '%';
-		youDied.style.width = 40 + '%';
-		youDied.style.textAlign = 'center';
-		youDied.style.top = 40 + '%';
-		youDied.style.left = 30 + '%';
-		youDied.style.padding = 0 + 'px';
-		youDied.style.margin = 0 + 'px';
-		youDied.style.fontSize = 6 + 'vw';
-		youDied.style.color = 'teal';
-		youDied.style.fontFamily = "sans-serif";
-		youDied.innerHTML = "YOU WON!";
-		document.body.appendChild(youDied);
+		centerText.style.fontSize = 6 + 'vw';
+		centerText.style.color = 'teal';
+		centerText.style.fontFamily = "sans-serif";
+		centerText.innerHTML = "YOU WON!";
+		document.body.appendChild(centerText);
 
-		var playAgain = document.createElement('button');
-		playAgain.style.position = 'absolute';
-		playAgain.style.height = 20 + '%';
-		playAgain.style.width = 20 + '%';
-		playAgain.style.textAlign = 'center';
-		playAgain.style.top = 60 + '%';
-		playAgain.style.left = 40 + '%';
-		playAgain.style.padding = 0 + 'px';
-		playAgain.style.margin = 0 + 'px';
-		playAgain.style.fontSize = 2 + 'vw';
-		playAgain.style.backgroundColor = 'white';
-		playAgain.style.borderRadius = 20 + '%';
-		playAgain.style.color = 'teal';
-		playAgain.style.fontFamily = "sans-serif";
-		playAgain.innerHTML = "PLAY AGAIN?";
+		button.style.fontSize = 2 + 'vw';
+		button.style.backgroundColor = 'white';
+		button.style.color = 'teal';
+		button.style.fontFamily = "sans-serif";
+		button.innerHTML = "PLAY AGAIN?";
 
-		playAgain.addEventListener ("click", function() {
+		button.addEventListener ("click", function() {
 		  location.reload();
 		});
 
-		document.body.appendChild(playAgain);
+		document.body.appendChild(button);
 
 	}
 	
