@@ -13,7 +13,7 @@ var hudCamera, hudRenderer;
 
 var clock = new THREE.Clock();
 
-var player, playerRotation = Math.PI, playerGridPos, dead = false, killed = false;
+var player, playerRotation = Math.PI, playerGridPos, dead = false, killed = false, winning, won = false;
 const speed = 0.15;
 
 const width = 26, height = 29;
@@ -436,6 +436,65 @@ function spawnDeathDivs(){
 	
 }
 
+function spawnWinDivs(){
+
+	if( !won ){
+		won = true
+
+		window.removeEventListener("click", onClick);
+
+		var redOverlay = document.createElement('div');
+		redOverlay.style.position = 'absolute';
+		redOverlay.style.height = 100 + '%';
+		redOverlay.style.width = 100 + '%';
+		redOverlay.style.top = 0 + '%';
+		redOverlay.style.padding = 0 + 'px';
+		redOverlay.style.margin = 0 + 'px';
+		redOverlay.style.backgroundColor = 'white';
+		redOverlay.style.opacity = 0.3;
+		redOverlay.style.filter = "alpha(opacity=30)";
+		document.body.appendChild(redOverlay);
+
+		var youDied = document.createElement('div');
+		youDied.style.position = 'absolute';
+		youDied.style.height = 40 + '%';
+		youDied.style.width = 40 + '%';
+		youDied.style.textAlign = 'center';
+		youDied.style.top = 40 + '%';
+		youDied.style.left = 30 + '%';
+		youDied.style.padding = 0 + 'px';
+		youDied.style.margin = 0 + 'px';
+		youDied.style.fontSize = 6 + 'vw';
+		youDied.style.color = 'teal';
+		youDied.style.fontFamily = "sans-serif";
+		youDied.innerHTML = "YOU WON!";
+		document.body.appendChild(youDied);
+
+		var playAgain = document.createElement('button');
+		playAgain.style.position = 'absolute';
+		playAgain.style.height = 20 + '%';
+		playAgain.style.width = 20 + '%';
+		playAgain.style.textAlign = 'center';
+		playAgain.style.top = 60 + '%';
+		playAgain.style.left = 40 + '%';
+		playAgain.style.padding = 0 + 'px';
+		playAgain.style.margin = 0 + 'px';
+		playAgain.style.fontSize = 2 + 'vw';
+		playAgain.style.backgroundColor = 'white';
+		playAgain.style.borderRadius = 20 + '%';
+		playAgain.style.color = 'teal';
+		playAgain.style.fontFamily = "sans-serif";
+		playAgain.innerHTML = "PLAY AGAIN?";
+
+		playAgain.addEventListener ("click", function() {
+		  location.reload();
+		});
+
+		document.body.appendChild(playAgain);
+
+	}
+	
+}
 
 function resizeFPS() {
 	const w = document.body.clientWidth;
@@ -539,6 +598,9 @@ function gridToCoord(gX,gZ){
 }
 
 function updatePlayer(){
+
+	if( Key.isDown(Key.R) )
+		spawnWinDivs();
 
 	if( Key.isDown(Key.L) )
 		dead = true;
