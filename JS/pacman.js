@@ -87,6 +87,10 @@ function enemy( animatedTexture, sprite ){
 
 	this.texture = animatedTexture;
 	this.sprite = sprite;
+	this.sprite.layers.set(2);
+	this.marker = new THREE.Mesh( new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial({color: 0xFF0000}));
+	this.marker.layers.set(1);
+	scene.add(this.marker);
 
 	this.targetPosition = this.sprite.position.clone();
 	this.gridPosition = coordToGrid(this.sprite.position.x, this.sprite.position.z);
@@ -102,6 +106,8 @@ function enemy( animatedTexture, sprite ){
 			this.footstep.play();
 
 		}
+
+		this.marker.position.copy(this.sprite.position);
 
 		if( this.sprite.position.distanceTo( this.targetPosition ) > 1 )
 			this.sprite.position.lerp( this.targetPosition, speed/this.sprite.position.distanceTo(this.targetPosition) );
@@ -274,15 +280,22 @@ function makePellet(width, height, x, z){
 	pelletTexture.repeat.set( 1, 1 );
 
 	var pellet = new THREE.Sprite(new THREE.SpriteMaterial({color: 0x777777, map: pelletTexture}));
-	pellet.position.x = 5*(x-width/2)+2.5;
-	pellet.position.z = 5*(z-height/2)+2.5;
-	pellet.position.y = -0.5;
 	pellet.scale.y = 4;
 	pellet.scale.x = 4;
 
-	pellets[x][z] = pellet;
+	pellet.layers.set(2);
 
-	return pellet;
+	var marker = new THREE.Mesh( new THREE.SphereGeometry(1), new THREE.MeshBasicMaterial({color: 0x000000}));
+	marker.layers.set(1);
+	marker.add(pellet);
+
+	marker.position.x = 5*(x-width/2)+2.5;
+	marker.position.z = 5*(z-height/2)+2.5;
+	marker.position.y = -0.5;
+
+	pellets[x][z] = marker;
+
+	return marker;
 	
 }
 
@@ -320,6 +333,7 @@ function initFPS(){
 	fpsRenderer.shadowMap.enabled = true;
 
 	fpsCamera = new THREE.PerspectiveCamera( 45, 1, 0.1, 10000 );
+	fpsCamera.layers.enable(2);
 
 	player.add(fpsCamera);
 	fpsCamera.lookAt( new THREE.Vector3(0,0,10) );
@@ -337,6 +351,7 @@ function initHUD(width, height){
 
 	hudCamera = new THREE.OrthographicCamera( height / -2, height / 2, width / 2, width / -2);
 	hudCamera.position.y = 1000;
+	hudCamera.layers.enable(1);
 
 	hudCamera.lookAt(scene.position);
 
