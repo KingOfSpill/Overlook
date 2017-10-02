@@ -467,7 +467,7 @@ function spawnStartScreen(){
 
 	document.body.appendChild(myName);
 
-	centerImage.src = 'Textures/OverLook.png'
+	centerImage.src = 'Textures/Overlook.png'
 	document.body.appendChild(centerImage);
 
 	document.body.appendChild(instructions);
