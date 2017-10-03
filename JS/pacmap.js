@@ -1,28 +1,5 @@
 var PACMAP = { REVISION: '1' };
 
-/*PACMAP.piece = function( width, height, map ){
-
-	this.map = new Array();
-
-	for( var i = 0; i < height; i++ )
-		for( var j = 0; j < width; j++ )
-			this.map[i][j] = map[ (height*i) + j];
-
-
-	this.percentFull = function(){
-
-		var sum = 0;
-
-		for( var i = 0; i < map.length; i++ )
-			for( var j = 0; j < map[i].length; j++)
-				sum += map[i][j] ? 1 : 0;
-
-		return sum/(width*height);
-
-	}
-
-}*/
-
 PACMAP.generateMap = function( width, height ){
 
 	var map = new Array();
