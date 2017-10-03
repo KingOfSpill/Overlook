@@ -18,7 +18,7 @@ var hudCamera, hudRenderer;
 
 var clock = new THREE.Clock();
 
-var player, playerRotation = Math.PI, playerGridPos, dead = false, killed = false, winning, won = false;
+var player, playerRotation = 0, playerGridPos, dead = false, killed = false, winning, won = false;
 const speed = 0.15;
 
 const width = 26, height = 29;
@@ -500,6 +500,27 @@ function removeStartScreen(){
 			document.addEventListener('mozpointerlockchange', mouseLocked, false);
 			window.removeEventListener("click", onClick);
 		}, 500);
+
+	var loader = new THREE.FontLoader();
+	loader.load('Fonts/helvetiker_regular.typeface.json', function(font){
+
+		var textGeometry = new THREE.TextGeometry( "FIND THE REDRUMS\n DON'T GET KILLED", {
+			font: font,
+			size: 0.8,
+			height: 0.3,
+			curveSegments: 1
+		});
+
+		textGeometry.computeBoundingBox();
+		var offset = -0.5 * ( textGeometry.boundingBox.max.x - textGeometry.boundingBox.min.x );
+
+		var text = new THREE.Mesh( textGeometry, new THREE.MeshBasicMaterial({color: 0x550000}) );
+		text.position.x = -offset;
+		text.position.z = 2;
+		text.rotation.y = Math.PI;
+		scene.add( text );
+
+	});
 
 }
 
